@@ -29,6 +29,7 @@ class Item
      * @var Collection<int, Price>
      */
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'item', orphanRemoval: true)]
+    #[ORM\OrderBy(['checked_at' => 'DESC'])]
     private Collection $price;
 
     public function __construct()
@@ -105,5 +106,10 @@ class Item
         }
 
         return $this;
+    }
+    public function getLatestPrice(): Price
+    {
+        return $this->price->first();
+        // TODO implement
     }
 }
