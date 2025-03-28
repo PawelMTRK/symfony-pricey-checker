@@ -107,9 +107,10 @@ class Item
 
         return $this;
     }
-    public function getLatestPrice(): Price
+    public function getLatestPrice(): ?Price
     {
+        $price = $this->price->first();
+        if (is_bool($price)) return null;
         return $this->price->first();
-        // TODO implement
     }
 }
