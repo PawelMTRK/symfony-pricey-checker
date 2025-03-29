@@ -1,0 +1,1 @@
+Mały projekt do testów

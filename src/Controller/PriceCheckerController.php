@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Price;
+use App\Service\PriceScraper;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,8 +23,18 @@ final class PriceCheckerController extends AbstractController
         ]);
     }
     #[Route('/check', 'price_checker_check')]
-    public function checkPrices(EntityManagerInterface $em): Response
+    public function checkPrices(EntityManagerInterface $em, PriceScraper $ps): Response
     {
+        $items = $em->getRepository(Item::class)->findBy(['store' => 1]);
+        $p = new Price();
+        foreach ($items as $item) {
+            $value = $ps->scrape($item->getUrl(), $item->getStore()->getSelector());
+            $p->setItem($item);
+            $p->setValue($value);
+            $p->setCheckedAt(new DateTimeImmutable("now"));
+            $em->persist($p);
+        }
+        $em->flush();
         return $this->redirectToRoute('price_checker_index');
     }
 }
