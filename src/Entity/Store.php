@@ -27,6 +27,9 @@ class Store
     #[ORM\OneToMany(targetEntity: Item::class, mappedBy: 'store', orphanRemoval: true)]
     private Collection $items;
 
+    #[ORM\Column(length: 255)]
+    private ?string $cookie_text = null;
+
     public function __construct()
     {
         $this->items = new ArrayCollection();
@@ -87,6 +90,18 @@ class Store
                 $item->setStore(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCookieText(): ?string
+    {
+        return $this->cookie_text;
+    }
+
+    public function setCookieText(string $cookie_text): static
+    {
+        $this->cookie_text = $cookie_text;
 
         return $this;
     }
