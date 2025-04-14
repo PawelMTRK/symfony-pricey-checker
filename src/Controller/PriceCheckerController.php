@@ -25,16 +25,33 @@ final class PriceCheckerController extends AbstractController
     #[Route('/check', 'price_checker_check')]
     public function checkPrices(EntityManagerInterface $em, PriceScraper $ps): Response
     {
-        $items = $em->getRepository(Item::class)->findBy(['store' => 1]);
+        $items = $em->getRepository(Item::class)->findAll();
         $p = new Price();
         foreach ($items as $item) {
-            $value = $ps->scrape($item->getUrl(), $item->getStore()->getSelector());
+            $value = $ps->scrape(
+                $item->getUrl(), 
+                $item->getStore()->getSelector(),
+                $item->getStore()->getCookieText()
+            );
             $p->setItem($item);
             $p->setValue($value);
             $p->setCheckedAt(new DateTimeImmutable("now"));
             $em->persist($p);
         }
+        dd($items, $p);
         $em->flush();
+        return $this->redirectToRoute('price_checker_index');
+    }
+    #[Route('/test/{storeid}', 'price_checker_check')]
+    public function test(int $storeid, EntityManagerInterface $em, PriceScraper $ps): Response
+    {
+        $item = $em->getRepository(Item::class)->findOneBy(['store' => $storeid ?? 1]);
+        $value = $ps->scrape(
+            $item->getUrl(), 
+            $item->getStore()->getSelector(),
+            $item->getStore()->getCookieText()
+        );
+        dd($item, $value);
         return $this->redirectToRoute('price_checker_index');
     }
 }
