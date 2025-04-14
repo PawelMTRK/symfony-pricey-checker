@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use Facebook\WebDriver\WebDriverDimension;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Panther\Client;
@@ -9,31 +10,34 @@ use Symfony\Component\Panther\Client;
 
 class PriceScraper
 {
-    public function __construct(private LoggerInterface $logger) {}
-    private function parse(string $pricetext) : float
+    public function __construct(private LoggerInterface $logger)
     {
-        $this->logger->info("Parsowanie ceny '" . $pricetext . "'");
-        $pricetext = preg_replace('/[^0-9\.]/', '', $pricetext);
-        if (!str_contains($pricetext, ".")) {
-            $p = strlen($pricetext) - 2;
-            $pricetext = substr($pricetext, 0, $p) . "." . substr($pricetext, $p);
-        }
-        $price = floatval($pricetext);
+    }
+    private function parse(string $whole, string $frac): float
+    {
+        $this->logger->info("Parsing " . $whole . ", " . $frac);
+        $price = floatval(intval($whole) . "." . intval($frac));
         return $price;
     }
-    public function scrape(string $url, string $selector): float
+    public function scrape(string $url, string $selector, string $cookie_selector): float
     {
         $client = Client::createFirefoxClient();
         $client->request('GET', $url);
-        $client->takeScreenshot("TEST.png");
-        try {
-            // TODO add field to Store entity that has cookie button text
-            $client->clickLink("ZAAKCEPTUJ WSZYSTKIE");
-        } catch(InvalidArgumentException) {
+        $size = new WebDriverDimension(1600, 1200);
+        $client->manage()->window()->setSize($size);
 
-        }
-        $crawler = $client->waitFor($selector);
-        $text = $crawler->filter($selector)->text(null, true);
-        return $this->parse($text);
+        // $client->takeScreenshot("INIT.png");
+        $client
+            ->waitForVisibility($cookie_selector)
+            ->filter($cookie_selector)
+            ->click();
+        $price_childs = $client
+            ->waitForVisibility($selector)
+            ->filter($selector)
+            ->children();
+        $price_whole = $price_childs->eq(0)->text();
+        $price_frac = $price_childs->eq(1)->text();
+        // $client->takeScreenshot("POST.png");
+        return $this->parse($price_whole, $price_frac);
     }
 }
