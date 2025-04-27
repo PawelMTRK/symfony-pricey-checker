@@ -28,7 +28,7 @@ class Store
     private Collection $items;
 
     #[ORM\Column(length: 255)]
-    private ?string $cookie_text = null;
+    private ?string $cookie_selector = null;
 
     public function __construct()
     {
@@ -94,14 +94,14 @@ class Store
         return $this;
     }
 
-    public function getCookieText(): ?string
+    public function getCookieSelector(): ?string
     {
-        return $this->cookie_text;
+        return $this->cookie_selector;
     }
 
-    public function setCookieText(string $cookie_text): static
+    public function setCookieSelector(string $cookie_selector): static
     {
-        $this->cookie_text = $cookie_text;
+        $this->cookie_selector = $cookie_selector;
 
         return $this;
     }

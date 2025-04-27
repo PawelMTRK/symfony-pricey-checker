@@ -31,7 +31,7 @@ final class PriceCheckerController extends AbstractController
             $value = $ps->scrape(
                 $item->getUrl(), 
                 $item->getStore()->getSelector(),
-                $item->getStore()->getCookieText()
+                $item->getStore()->getCookieSelector()
             );
             $p->setItem($item);
             $p->setValue($value);
@@ -48,7 +48,7 @@ final class PriceCheckerController extends AbstractController
         $value = $ps->scrape(
             $item->getUrl(), 
             $item->getStore()->getSelector(),
-            $item->getStore()->getCookieText()
+            $item->getStore()->getCookieSelector()
         );
         dd($item, $value);
         return $this->redirectToRoute('price_checker_index');
